@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0" charset="utf-8">
+	<title>TodoApp Static Html</title>
+	<link rel="stylesheet" type="text/css" href="styles/app.css">
+</head>
+<body>
+	<div id="app">
+		<section id="todoapp">
+			<h1>todos</h1>
+			<header id="header">
+				<form id="todo-form">
+					<input id="new-todo" placeholder="What needs to be done?" autofocus="">
+				</form>
+			</header>
+			<section id="main">
+				<input id="toggle-all" type="checkbox">
+				<ul id="todo-list">
+					<li class="todoLi" id="1">
+						<div class="view">
+							<input class="toggle" type="checkbox">
+							<label class="todoTitle">Todo-A</label>
+							<button class="destroy"></button>
+						</div>
+						<form>
+							<input class="edit">
+						</form>
+					</li>
+				</ul>
+			</section>
+			<footer id="footer">
+				<span id="todo-count"><strong id="remainingCount">3</strong> items left</span>
+				<ul id="filters">
+					<li><a href="javascript:void(0)" value="all" class="selected">All</a></li>
+					<li><a href="javascript:void(0)" value="active">Active</a></li>
+					<li><a href="javascript:void(0)" value="completed">Completed</a></li>
+				</ul>
+				<button id="clear-completed" class="hidden">
+					Clear completed (<span id="completedCount">0</span>)
+				</button>
+			</footer>
+		</section>
+	</div>
+</body>
+</html>
