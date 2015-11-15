@@ -12,7 +12,7 @@ define(['jquery'],function($){
 		this.fnImpl = {};
 
 		var sNote = "<!-- >>>>>>>>>>>>>>>>>>>>>>> @note >>>>>>>>>>>>>>>>>>>>>>> -->",
-			eNote = "<!-- >>>>>>>>>>>>>>>>>>>>>>> @note >>>>>>>>>>>>>>>>>>>>>>> -->";
+			eNote = "<!-- <<<<<<<<<<<<<<<<<<<<<<< @note <<<<<<<<<<<<<<<<<<<<<<< -->";
 
 		this.myHtml = function(oriFn){
 			return function(){
