@@ -1,55 +1,51 @@
+"use strict";
+
 define(['jquery','storage'],function($,storage){
-	'use strict';
 
-	/*
-	todo的字面量格式：
-	todo : {
-		id : 0,
-		title : '',
-		completed : false
-	}
-	*/
-	function STodo(){
-		this.STORAGE_ID = 'TODO';
-		this.currID = this.getCurrID();//取得Todo自增ID的当前值
+	var _opt = {
+		STORAGE_ID : "TODO",
+		currID : getCurrID()
 	}
 
-	STodo.prototype.get = function(){
-		return storage.get(this.STORAGE_ID);
-	};
+	function getDB(){
+		return storage.get("TODO");
+	}
 
-	STodo.prototype.put = function(todos){
-		storage.put(this.STORAGE_ID,todos);
+	function putDB(todos){
+		storage.put(_opt.STORAGE_ID, todos);
 		return true;
-	};
+	}
 
-	STodo.prototype.clean = function(){
-		storage.clean(this.STORAGE_ID);
+	function cleanDB(){
+		storage.clean(_opt.STORAGE_ID);
 		return true;
-	};
+	}
+
+	//获得Todo自增ID的当前值
+	function getCurrID(){
+		var arr = getDB();
+		return arr.length>0 ? arr[arr.length-1].id : 0;
+	}
 
 	//增
-	STodo.prototype.add = function(todo){
-		var self  = this,
-			todos = self.get();
-		todo.id = ++self.currID;
+	function add(todo){
+		var todos = getDB();
+		todo.id = ++_opt.currID;
 		todos.push(todo);
-		self.put(todos);
-		return self.currID;
-	};
+		putDB(todos);
+		return _opt.currID;
+	}
 
 	//删
-	STodo.prototype.remove = function(id){
-		var self = this;
-		var todos = self.get();
-		todos.splice(self.indexByTodoID(id),1);
-		return self.put(todos);
-	};
+	function remove(id){
+		var todos = getDB();
+		todos.splice(indexByTodoID(id),1);
+		return putDB(todos);
+	}
 
 	//改
-	STodo.prototype.update = function(todo){
-		var self = this;
-		var todos = self.get();
+	function update(todo){
+		var todos = getDB();
 		for(var i=todos.length-1; i>=0; i--){
 			if(todo.id==todos[i].id){
 				for(var p in todo){
@@ -58,25 +54,23 @@ define(['jquery','storage'],function($,storage){
 				break;
 			}
 		}
-		return self.put(todos);
-	};
+		return putDB(todos);
+	}
 
 	//查（单个）
-	STodo.prototype.query = function(id){
-		var self = this;
-		var todos = self.get();
+	function query(id){
+		var todos = getDB();
 		for(var i=todos.length-1; i>=0; i--){
 			if(todos[i].id == id){
 				return todos[i];
 			}
 		}
-	};
+	}
 
 	//查（遍历）
-	STodo.prototype.list = function(completed){
-		var self = this;
-		var todos = self.get();
-		if(completed===undefined){
+	function list(completed){
+		var todos = getDB();
+		if(undefined===completed){
 			return todos;
 		}else{
 			var rsTodos = [];
@@ -86,64 +80,60 @@ define(['jquery','storage'],function($,storage){
 			});
 			return rsTodos;
 		}
-	};
+	}
 
 	//获取Todo总数量
-	STodo.prototype.getAllCount = function(){
-		var self = this;
-		return self.get().length;
-	};
+	function getAllCount(){
+		return getDB().length;
+	}
 
-	//获取未完成的Todo数量
-	STodo.prototype.getRemainingCount = function(){
-		var self = this;
-		var todos = self.get();
+	function getRemainingCount(){
+		var todos = getDB();
 		var remainingCount = 0;
 		$(todos).each(function(i){
-			if(false === todos[i].completed){
+			if(false===todos[i].completed){
 				remainingCount++;
 			}
 		});
 		return remainingCount;
-	};
+	}
 
 	//获取已完成的Todo数量
-	STodo.prototype.getCompletedCount = function(){
-		var self = this;
-		return self.getAllCount() - self.getRemainingCount();
-	};
+	function getCompletedCount(){
+		return getAllCount() - getRemainingCount();
+	}
 
 	//清除已完成的Todo
-	STodo.prototype.clearCompleted = function(){
-		var self = this;
-		var todos = self.get();
+	function clearCompleted(){
+		var todos = getDB();
 		var newTodos = [];
 		$(todos).each(function(i,todo){
-			if(false === todo.completed){
+			if(false===todo.completed){
 				newTodos.push(todo);
 			}
 		});
-		return self.put(newTodos);
-	};
+		return putDB(newTodos);
+	}
 
 	//根据Todo的id获取Todo在List中的索引
-	STodo.prototype.indexByTodoID = function(todoID){
-		var self = this;
-		var todos = self.get();
-		for(var i=0,todo; todo=todos[i]; i++){
+	function indexByTodoID(todoID){
+		var todos = getDB();
+		for(var i=0,todo; todo=todos[i];i++){
 			if(todoID == todo.id){
 				return i;
-				break;
 			}
 		}
-	};
+	}
 
-	// 获取Todo自增ID的当前值
-	STodo.prototype.getCurrID = function(){
-		var self = this;
-		var arr = self.get();
-		return arr.length>0 ? arr[arr.length-1].id : 0;
-	};
-
-	return new STodo();
+	return {
+		getDB : getDB,
+		add : add,
+		remove : remove,
+		update : update,
+		list : list,
+		getAllCount : getAllCount,
+		getCompletedCount: getCompletedCount,
+		getRemainingCount: getRemainingCount,
+		clearCompleted: clearCompleted
+	}
 });

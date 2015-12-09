@@ -1,109 +1,102 @@
 'use strict';
 define(['jquery','base'], function($,base){
 	
-	function ListTodo(){
-		this.file 		= 'listTodo.js';
-		this.filterKey 	= 'all',
-		this.anchor 	= null;
-		this.todosUl 	= null;
-		this.chkAll 	= null;
-	}
-
-	ListTodo.prototype.tpls = {
-		comp :  "<input id='toggle-all' type='checkbox'>"+
-            	"<ul id='todo-list'></ul>"
+	var _opt = {
+		file 	 : "listTodo.js",
+		filterKey: "all"
 	};
 
-	//组件的渲染函数
-	ListTodo.prototype.render = function(anchor){
-		var self = this;
-		self.anchor = anchor;
-		// base.html(self.anchor, self.tpls.comp, self.file);
-		self.anchor.html(self.tpls.comp, self.file);
+	var _dom = {
+		slot   : null,
+		chkAll : null
+	};
+
+	var _htm = {
+		main : 
+			"<input id='toggle-all' type='checkbox'>"+
+            "<ul id='todo-list'></ul>"
+	};
+
+	function render(slot){
+		_dom.slot = slot;
+		_dom.slot.html(_htm.main, _opt.file);
 
 		//实例DOM对象
-		self.todosUl = self.anchor.find('#todo-list');
+		_dom.todosUl = _dom.slot.find("#todo-list");
+		_dom.chkAll = _dom.slot.find("#toggle-all");
 
 		//绑定事件函数
-		self.chkAll = self.anchor.find('#toggle-all');
-		self.chkAll.click(function(){
-			self.toggleAll( $(this)[0].checked );
-		});
+		_dom.chkAll.click(function(){
+			toggleAll($(this)[0].checked);
+		})
 
 		//加载数据
-		self.load();
-	};
+		loadData();
+	}
 
-	//加载数据函数
-	ListTodo.prototype.load = function(){
-		var self = this;
-
-		if(!self.anchor) return;
-
-		base.trigger('ListTodo_load');//发布'ListTodo_load'消息
+	function loadData(){
+		if(!_dom.slot) return;
+		base.trigger('ListTodo_load');
 
 		//Todo总数不为0时，隐藏本组件，否则显示该组件。
-		var todosCount = base.request('getTodosCount');
-		if(todosCount===0){
-			self.anchor.addClass('hidden');
+		var todosCount = base.request("getTodosCount");
+		if(0===todosCount){
+			_dom.slot.addClass("hidden");
 			return;
 		}else{
-			self.anchor.removeClass('hidden');
+			_dom.slot.removeClass("hidden");
 		}
-		self.listTodos(self.filterKey);//遍历todos队列
-		self.updateChkAllBtn();//根据todos的完成状态更新toggle-all按钮
-	};
+		listTodos(_opt.filterKey);
+		updateChkAllBtn();
+	}
 
-	//加载todos队列
-	ListTodo.prototype.listTodos = function(filterKey){
-		var self = this;
+	function listTodos(filterKey){
 		var completed;
 		switch(filterKey){
 			case 'all':
-				self.filterKey = 'all';
+				_opt.filterKey = 'all';
 				break;
 			case 'active':
-				self.filterKey = 'active';
+				_opt.filterKey = 'active';
 				completed = false;
 				break;
 			case 'completed':
-				self.filterKey = 'completed';
+				_opt.filterKey = 'completed';
 				completed = true;
 				break;
 			default:
-				self.filterKey = 'all';
+				_opt.filterKey = 'all';
 				break;
 		}
-		self.todosUl.html('');
-		//请求todos(by completed)
-		var todos = base.request('listTodosByCompleted',completed) || [];
-		for(var i=0,todo; todo=todos[i]; i++){
-			base.request('appendTodo', self.todosUl, todo);
+		_dom.todosUl.html('');
+		var todos = base.request("listTodosByCompleted",completed) || [];
+		for(var i=0, todo; todo=todos[i]; i++){
+			base.request("appendTodo", _dom.todosUl, todo);
 		}
-	};
+	}
 
-	//变更所有Todo的状态
-	ListTodo.prototype.toggleAll = function(completed){
-		var self = this;
-		var todos = base.request('getAllTodos');
+	function toggleAll(completed){
+		var todos = base.request("getAllTodos");
 		$(todos).each(function(i,todo){
-			var ok = base.request('toggleCompleted',todo.id,completed);
-			ok ? self.load() : console.log('Error of toggleCompleted.');
+			var ok = base.request("toggleCompleted", todo.id, completed);
+			ok ? loadData() : console.log("Error of toggleCompleted.");
 		});
-		self.load();
-	};
+		loadData();
+	}
 
-	//更新ChkAllBtn的状态
-	ListTodo.prototype.updateChkAllBtn = function(){
-		var self = this;
-		if(undefined === self.chkAll[0])
+	function updateChkAllBtn(){
+		if(undefined === _dom.chkAll[0])
 			return;
 		if( base.request('getCompletedCount')>0 && base.request('getRemainingCount')==0 ){
-			self.chkAll[0].checked = true;
+			_dom.chkAll[0].checked = true;
 		}else{
-			self.chkAll[0].checked = false;
+			_dom.chkAll[0].checked = false;
 		}
-	};
-	
-	return new ListTodo();
+	}
+
+	return {
+		render : render,
+		loadData: loadData,
+		listTodos: listTodos
+	}
 });

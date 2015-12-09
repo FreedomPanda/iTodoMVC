@@ -2,30 +2,33 @@
 
 define(['jquery','base'], function($,base){
 
-	function TodoItem(){
-		this.file 	= 'todoItem.js';
-		this.anchor = null;
-	}
+	var _opt = {
+		file : "todoItem.js"
+	};
 
-	TodoItem.prototype.tpls = {
-		comp : "<li class='todoLi' id='@id'>"+
-		        	"<div class='view'>"+
-		        		"<input class='toggle' type='checkbox'>"+
-		        		"<label class='todoTitle'>@title</label>"+
-		        		"<button class='destroy'></button>"+
-		        	"</div>"+
-		        	"<form><input class='edit'></form>"+
-		        "</li>"
+	var _dom = {
+		slot : null
+	};
+
+	var _htm = {
+		main : 
+			"<li class='todoLi' id='@id'>"+
+	        	"<div class='view'>"+
+	        		"<input class='toggle' type='checkbox'>"+
+	        		"<label class='todoTitle'>@title</label>"+
+	        		"<button class='destroy'></button>"+
+	        	"</div>"+
+	        	"<form><input class='edit'></form>"+
+	        "</li>"
 	};
 
 	//组件渲染函数
-	TodoItem.prototype.render = function(anchor, todo){
-		if(!anchor || !todo) return; //校验参数
+	function render(slot, todo){
+		if(!slot || !todo) return; //校验参数
 
-		var self = this;
-		self.anchor = anchor;
+		_dom.slot = slot;
 
-		var todoLi = $( self.tpls.comp
+		var todoLi = $( _htm.main
 			.replace('@id',todo.id)
 			.replace('@title',todo.title) );
 
@@ -36,35 +39,32 @@ define(['jquery','base'], function($,base){
 
 		//绑定事件函数
 		todoLi.find('.destroy').click(function(){
-			self.removeTodo(todoLi);
+			removeTodo(todoLi);
 		});
 		todoLi.find('.toggle').click(function(){
-			self.toggleCompleted( todoLi, $(this) );
+			toggleCompleted( todoLi, $(this) );
 		});
 		todoLi.find('.todoTitle').dblclick(function(){
-			self.onEditTodo( todoLi );
+			onEditTodo( todoLi );
 		});
 		
-		self.anchor.prepend(todoLi, self.file);
+		_dom.slot.prepend(todoLi, self.file);
 	};	
 
 	//删除Todo
-	TodoItem.prototype.removeTodo = function(todoLi){
-		var self = this;
-		var ok = base.request( 'deleteTodo', todoLi.attr('id') );
-		ok ? base.trigger('TodoItem_removeTodo') : console.log('Error of removeTodo.');
+	function removeTodo(todoLi){
+		var ok = base.request( "deleteTodo", todoLi.attr("id") );
+		ok ? base.trigger("TodoItem_removeTodo") : console.log("Error of removeTodo.");
 	};
 
 	//变更Todo的状态
-	TodoItem.prototype.toggleCompleted = function(todoLi, chk){
-		var self = this;
+	function toggleCompleted(todoLi, chk){
 		var ok = base.request('toggleCompleted', todoLi.attr('id'), chk[0].checked);
 		ok ? base.trigger('TodoItem_toggleCompleted') : console.log('Error of toggleCompleted.');
 	};
 
 	//编辑Todo
-	TodoItem.prototype.onEditTodo = function(todoLi){
-		var self = this;
+	function onEditTodo(todoLi){
 		todoLi.addClass('editing');
 		var title = todoLi.find('.todoTitle').text();
 		var editInpt = todoLi.find('input[class=edit]');
@@ -81,5 +81,7 @@ define(['jquery','base'], function($,base){
 		editInpt.val(title).focus();
 	};
 
-	return new TodoItem(); 
+	return {
+		render : render
+	}
 });
